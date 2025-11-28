@@ -1,0 +1,11 @@
+1) Instalar MCP y el conector de mariaDB en la raspberry pi
+    pip install model-context-protocol mariadb
+2) Instalar Kubernetes K3 (ligero idela para raspberry pi)
+    curl -sfL https://get.k3s.io | sh -
+2a) Para usar kubectl como usario normal (en lugar de root):
+    sudo cp /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+3) Verificar la instalación:
+    python -c "import mcp, mariadb; print('MCP y MariaDB listos')"
+    kubectl get nodes
+    

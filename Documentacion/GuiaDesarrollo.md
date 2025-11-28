@@ -64,12 +64,22 @@
 
 ### g) Despliegue
 
-- Clonar el repo en la Raspberry Pi.
-- Ejecutar:
+- Puedes **clonar el repositorio** directamente en la Raspberry Pi:
+	```sh
+	git clone https://github.com/RodrigoSamborms/Microservicios.git
+	```
+
+- O bien, si ya tienes el proyecto actualizado en tu PC, puedes **copiar los archivos usando scp** desde PowerShell:
+	```powershell
+	scp -r C:\Users\sambo\Documents\Programacion\GitHub\MicroServicios usuario@IP_RASPBERRY:/ruta/destino
+	```
+	Cambia `usuario` por tu usuario en la Raspberry Pi, `IP_RASPBERRY` por la IP de tu dispositivo y `/ruta/destino` por la carpeta donde quieres copiar los archivos.
+
+- Una vez que los archivos estén en la Raspberry Pi, ejecuta:
 	```sh
 	docker-compose up --build -d
 	```
-- Acceder desde el navegador usando la IP del Raspberry Pi.
+- Accede desde el navegador usando la IP del Raspberry Pi.
 
 ## 4. Ejemplo de docker-compose.yml
 
