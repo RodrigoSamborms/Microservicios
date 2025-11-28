@@ -1,5 +1,28 @@
 1) Instalar MCP y el conector de mariaDB en la raspberry pi
-    pip install model-context-protocol mariadb
+    pip install mariadb
+1a) MCP model-context-protocol:
+    Instalar uv (ambientes virtuales)
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+    Crear y Activar un ambiente virtuale
+        # Create a new project directory
+        sudo mkdir mcp_project
+        sudo chown -R $USER:$USER /home/rodrigo/mcp_project
+        cd mcp_project
+
+        # Initialize a uv-managed project and create a virtual environment
+        
+        uv init     
+        uv venv     #alternativamente: uv venv --python=python3.10
+                    #con el path completo: uv venv --python=/usr/local/bin/python3.10
+        source .venv/bin/activate
+    Instalar MCP SDK
+        # Si uv add falla al instalar mcp[cli] (por ejemplo, por usar la versión incorrecta de Python):
+        # Usa pip directamente dentro del ambiente virtual creado con Python 3.10:
+        python --version  # Debe mostrar Python 3.10.13
+        pip install "mcp[cli]"       # necesita python 3.10 en adelante
+        #vea más abajo cómo instalar python 3.10 manualmente
+    Verificar la instalación:
+        mcp version
 2) Instalar Kubernetes K3 (ligero idela para raspberry pi)
     curl -sfL https://get.k3s.io | sh -
 2a) Para usar kubectl como usario normal (en lugar de root):
@@ -8,4 +31,44 @@
 3) Verificar la instalación:
     python -c "import mcp, mariadb; print('MCP y MariaDB listos')"
     kubectl get nodes
+
+
+*) Remover python pip en caso de fallas
+    sudo apt remove --purge python3-pip
+    sudo apt autoremove
+    sudo apt update
+    sudo apt upgrade
+    sudo apt install python3
+    python3 --version
+    sudo apt install python3-pip --reinstall
+*) Instalar python 3.10 manualmente
+    #Instalar las dependencias primero
+    sudo apt update
+    sudo apt install -y wget build-essential libssl-dev zlib1g-dev libncurses5-dev \
+    libncursesw5-dev libreadline-dev libsqlite3-dev libgdbm-dev libdb5.3-dev \
+    libbz2-dev libexpat1-dev liblzma-dev tk-dev libffi-dev libgmp-dev
+
+    #Descarga e instala python 3.10
+    cd /tmp
+    wget https://www.python.org/ftp/python/3.10.13/Python-3.10.13.tgz
+    tar -xf Python-3.10.13.tgz
+    cd Python-3.10.13
+    ./configure --enable-optimizations
+    make -j $(nproc)
+    sudo make altinstall
+
+    #verificar la instalacion:
+    python3.10 --version
+    pip3.10 --version
+
+    #Crear ambientes virtuales con python 3.10:
+    python3.10 -m venv .venv
+    source .venv/bin/activate
+    python --version  # Debe mostrar Python 3.10.13
     
+    #Instalar MCP:
+    pip install "mcp[cli]"
+
+*) Salir y Remover un ambiente virtual
+    deactivate
+    rm -rf .venv

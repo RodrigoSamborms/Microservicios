@@ -1,3 +1,22 @@
+## 7. Monitoreo Remoto de Microservicios
+
+Para monitorear los microservicios que se ejecutan en la Raspberry Pi desde tu laptop (o cualquier otra máquina), puedes instalar sistemas de monitoreo como Prometheus y Grafana en tu laptop o en WSL (Debian/Ubuntu). Así, la Raspberry Pi actúa como servidor y tu laptop como estación de monitoreo, simulando un entorno real.
+
+**Recomendación práctica:**
+- Instala Prometheus y Grafana en tu laptop o en WSL.
+- Configura Prometheus para recolectar métricas de la Raspberry Pi (por ejemplo, usando Node Exporter, cAdvisor o endpoints HTTP expuestos por tus microservicios).
+- Visualiza y analiza los datos desde los dashboards de Grafana en tu laptop.
+
+**Ventajas:**
+- No sobrecargas la Raspberry Pi con tareas de monitoreo.
+- Puedes monitorear y mostrar el estado de los servicios desde cualquier lugar de la red.
+- Es fácil de escalar y compartir con otros.
+
+**Notas:**
+- Istio es un service mesh potente, pero pesado para la Raspberry Pi. Úsalo solo en entornos de pruebas o en máquinas más potentes.
+- Para monitoreo ligero en la Raspberry Pi, considera Prometheus + Grafana, Netdata, o Node Exporter.
+
+Cuando quieras implementar el monitoreo, puedes pedirme una guía paso a paso para instalar y conectar estas herramientas.
 # Guía de Desarrollo: Proyecto Web con Microservicios en Raspberry Pi
 
 ## 1. Estructura del Proyecto
