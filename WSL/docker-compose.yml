@@ -1,0 +1,24 @@
+version: '3.9'
+services:
+  personas-api:
+    build: ./servicios/personas-api
+    container_name: personas-api
+    environment:
+      - DB_HOST=169.254.218.17
+      - DB_USER=agendaAdmin
+      - DB_PASSWORD=1234
+      - DB_NAME=agenda
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
+  flask-frontend:
+    build: ./frontend/flask-frontend
+    container_name: flask-frontend
+    environment:
+      - API_URL=http://personas-api:5000/personas
+    ports:
+      - "8000:8000"
+    depends_on:
+      - personas-api
+    restart: unless-stopped
