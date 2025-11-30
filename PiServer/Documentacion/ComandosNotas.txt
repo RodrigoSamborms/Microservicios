@@ -1,0 +1,124 @@
+1) Instalar MCP y el conector de mariaDB en la raspberry pi
+    pip install mariadb  #dentro del ambiente virtual
+1a) MCP model-context-protocol:
+    Instalar uv (ambientes virtuales)
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+    Crear y Activar un ambiente virtuale
+        # Create a new project directory
+        sudo mkdir mcp_project
+        sudo chown -R $USER:$USER /home/rodrigo/mcp_project
+        cd mcp_project
+
+        # Initialize a uv-managed project and create a virtual environment
+        
+        uv init     
+        uv venv     #alternativamente: uv venv --python=python3.10
+                    #con el path completo: uv venv --python=/usr/local/bin/python3.10
+        source .venv/bin/activate
+    Instalar MCP SDK
+        # Si uv add falla al instalar mcp[cli] (por ejemplo, por usar la versión incorrecta de Python):
+        # Usa pip directamente dentro del ambiente virtual creado con Python 3.10:
+        python --version  # Debe mostrar Python 3.10.13
+        pip install "mcp[cli]"       # necesita python 3.10 en adelante
+        #vea más abajo cómo instalar python 3.10 manualmente
+    Verificar la instalación:
+        mcp version
+2) Instalar Kubernetes K3 (ligero idela para raspberry pi)
+    curl -sfL https://get.k3s.io | sh -
+2a) Para usar kubectl como usario normal (en lugar de root):
+    sudo cp /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+3) Verificar la instalación:
+    python -c "import mcp, mariadb; print('MCP y MariaDB listos')" #ejecutar en virtual environment
+    kubectl get nodes
+
+=====================================
+*) Remover python pip en caso de fallas
+    sudo apt remove --purge python3-pip
+    sudo apt autoremove
+    sudo apt update
+    sudo apt upgrade
+    sudo apt install python3
+    python3 --version
+    sudo apt install python3-pip --reinstall
+*) Instalar python 3.10 manualmente
+    #Instalar las dependencias primero
+    sudo apt update
+    sudo apt install -y wget build-essential libssl-dev zlib1g-dev libncurses5-dev \
+    libncursesw5-dev libreadline-dev libsqlite3-dev libgdbm-dev libdb5.3-dev \
+    libbz2-dev libexpat1-dev liblzma-dev tk-dev libffi-dev libgmp-dev
+
+    #Descarga e instala python 3.10
+    cd /tmp
+    wget https://www.python.org/ftp/python/3.10.13/Python-3.10.13.tgz
+    tar -xf Python-3.10.13.tgz
+    cd Python-3.10.13
+    ./configure --enable-optimizations
+    make -j $(nproc)
+    sudo make altinstall
+
+    #verificar la instalacion:
+    python3.10 --version
+    pip3.10 --version
+
+    #Crear ambientes virtuales con python 3.10:
+    python3.10 -m venv .venv
+    source .venv/bin/activate
+    python --version  # Debe mostrar Python 3.10.13
+    
+    #Instalar MCP:
+    pip install "mcp[cli]"
+
+*) Salir y Remover un ambiente virtual
+    deactivate
+    rm -rf .venv
+
+*) Instalar mariadb connecto/C 3.3X
+    #Instalar dependencias necesarias:
+    sudo apt update
+    sudo apt install -y cmake build-essential libssl-dev
+
+    #Descarga el código fuente de MariaDB Connector/C
+    cd /tmp
+    wget https://downloads.mariadb.com/Connectors/c/connector-c-3.3.4/mariadb-connector-c-3.3.4-src.tar.gz
+    tar -xzf mariadb-connector-c-3.3.4-src.tar.gz
+    cd mariadb-connector-c-3.3.4-src
+
+    #Compila e instala
+    cmake .
+    make
+    sudo make install
+    sudo ldconfig
+
+    #Instalar nuevamente el paquete de python
+    pip install mariadb
+
+*) Configurar K3s/Kubernetes:
+    #editar el archivo de configuración con la siguiente linea:
+    cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1 systemd.unified_cgroup_hierarchy=1
+    #pegar al final de la linea (sin saltar la linea) y dejando un espacio
+    #el archivo a editar es:
+    sudo vim /boot/cmdline.txt
+    #reincia la rasberry pi para visualizar los cambios:
+    sudo reboot
+
+    #tras reinciar verifar que cgroups v2 este activo:
+    ls /sys/fs/cgroup/unified
+    
+    #ingresar al ambiente virtual de python
+    cd mcp_project
+    source .venv/bin/activate
+    cd /tmp
+
+    # Crear el directorio de configuración de kubectl si no existe
+    mkdir -p $HOME/.kube
+
+    # Copiar el archivo de configuración de k3s a tu usuario
+    sudo cp /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+    # (Opcional) Exportar la variable de entorno para kubectl
+    export KUBECONFIG=$HOME/.kube/config
+
+    # Probar el acceso a Kubernetes
+    kubectl get nodes
