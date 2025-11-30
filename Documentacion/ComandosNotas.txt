@@ -1,5 +1,5 @@
 1) Instalar MCP y el conector de mariaDB en la raspberry pi
-    pip install mariadb
+    pip install mariadb  #dentro del ambiente virtual
 1a) MCP model-context-protocol:
     Instalar uv (ambientes virtuales)
         curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -29,10 +29,10 @@
     sudo cp /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
     sudo chown $(id -u):$(id -g) $HOME/.kube/config
 3) Verificar la instalación:
-    python -c "import mcp, mariadb; print('MCP y MariaDB listos')"
+    python -c "import mcp, mariadb; print('MCP y MariaDB listos')" #ejecutar en virtual environment
     kubectl get nodes
 
-
+=====================================
 *) Remover python pip en caso de fallas
     sudo apt remove --purge python3-pip
     sudo apt autoremove
@@ -72,3 +72,53 @@
 *) Salir y Remover un ambiente virtual
     deactivate
     rm -rf .venv
+
+*) Instalar mariadb connecto/C 3.3X
+    #Instalar dependencias necesarias:
+    sudo apt update
+    sudo apt install -y cmake build-essential libssl-dev
+
+    #Descarga el código fuente de MariaDB Connector/C
+    cd /tmp
+    wget https://downloads.mariadb.com/Connectors/c/connector-c-3.3.4/mariadb-connector-c-3.3.4-src.tar.gz
+    tar -xzf mariadb-connector-c-3.3.4-src.tar.gz
+    cd mariadb-connector-c-3.3.4-src
+
+    #Compila e instala
+    cmake .
+    make
+    sudo make install
+    sudo ldconfig
+
+    #Instalar nuevamente el paquete de python
+    pip install mariadb
+
+*) Configurar K3s/Kubernetes:
+    #editar el archivo de configuración con la siguiente linea:
+    cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1 systemd.unified_cgroup_hierarchy=1
+    #pegar al final de la linea (sin saltar la linea) y dejando un espacio
+    #el archivo a editar es:
+    sudo vim /boot/cmdline.txt
+    #reincia la rasberry pi para visualizar los cambios:
+    sudo reboot
+
+    #tras reinciar verifar que cgroups v2 este activo:
+    ls /sys/fs/cgroup/unified
+    
+    #ingresar al ambiente virtual de python
+    cd mcp_project
+    source .venv/bin/activate
+    cd /tmp
+
+    # Crear el directorio de configuración de kubectl si no existe
+    mkdir -p $HOME/.kube
+
+    # Copiar el archivo de configuración de k3s a tu usuario
+    sudo cp /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+    # (Opcional) Exportar la variable de entorno para kubectl
+    export KUBECONFIG=$HOME/.kube/config
+
+    # Probar el acceso a Kubernetes
+    kubectl get nodes
