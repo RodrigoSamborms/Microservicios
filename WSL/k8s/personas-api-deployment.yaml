@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: personas-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: personas-api
+  template:
+    metadata:
+      labels:
+        app: personas-api
+    spec:
+      containers:
+      - name: personas-api
+        image: wsl-personas-api:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+        env:
+        - name: DB_HOST
+          value: "169.254.218.17"
+        - name: DB_USER
+          value: "agendaAdmin"
+        - name: DB_PASSWORD
+          value: "1234"
+        - name: DB_NAME
+          value: "agenda"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: personas-api
+  labels:
+    app: personas-api
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "5000"
+    prometheus.io/path: "/metrics"
+spec:
+  selector:
+    app: personas-api
+  ports:
+    - name: http
+      protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP

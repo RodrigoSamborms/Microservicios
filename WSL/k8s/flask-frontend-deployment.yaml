@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask-frontend
+  template:
+    metadata:
+      labels:
+        app: flask-frontend
+    spec:
+      containers:
+      - name: flask-frontend
+        image: wsl-flask-frontend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        env:
+        - name: API_URL
+          value: "http://personas-api:5000/personas"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-frontend
+spec:
+  selector:
+    app: flask-frontend
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: NodePort
